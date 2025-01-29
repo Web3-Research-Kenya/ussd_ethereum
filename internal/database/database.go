@@ -2,13 +2,13 @@ package database
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
 	"strconv"
 	"time"
 
+	"github.com/jmoiron/sqlx"
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -19,13 +19,25 @@ type Service interface {
 	// The keys and values in the map are service-specific.
 	Health() map[string]string
 
+	CreateTable()
+
+	// Insert Record
+	InsertWallet(phoneNumber, pin, publicKey, keystorePath string) error
+
+	// Select Wallet by phone number
+	SelectWalletByPhone(phoneNumber string) (*WalletRecord, error)
+
+	// Update keystore path
+	UpdateKeystorePathByID(path string, id uint64)
+	// Close terminates the database connection.
+	// It returns an error if the connection cannot be closed.
 	// Close terminates the database connection.
 	// It returns an error if the connection cannot be closed.
 	Close() error
 }
 
 type service struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
 var (
@@ -39,7 +51,7 @@ func New() Service {
 		return dbInstance
 	}
 
-	db, err := sql.Open("sqlite3", dburl)
+	db, err := sqlx.Open("sqlite3", dburl)
 	if err != nil {
 		// This will not be a connection error, but a DSN parse error or
 		// another initialization error.

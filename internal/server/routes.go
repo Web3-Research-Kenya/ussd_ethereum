@@ -1,11 +1,15 @@
 package server
 
 import (
+	"ussd_ethereum/internal/handlers"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func (s *FiberServer) RegisterFiberRoutes() {
+
+	h := handlers.NewHandler(s.db)
 	// Apply CORS middleware
 	s.App.Use(cors.New(cors.Config{
 		AllowOrigins:     "*",
@@ -15,18 +19,10 @@ func (s *FiberServer) RegisterFiberRoutes() {
 		MaxAge:           300,
 	}))
 
-	s.App.Get("/", s.HelloWorldHandler)
+	s.App.Post("/callback", h.CallbackHandler)
 
 	s.App.Get("/health", s.healthHandler)
 
-}
-
-func (s *FiberServer) HelloWorldHandler(c *fiber.Ctx) error {
-	resp := fiber.Map{
-		"message": "Hello World",
-	}
-
-	return c.JSON(resp)
 }
 
 func (s *FiberServer) healthHandler(c *fiber.Ctx) error {

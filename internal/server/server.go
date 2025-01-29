@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/gofiber/fiber/v2"
 
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"ussd_ethereum/internal/database"
 )
 
@@ -22,5 +23,8 @@ func New() *FiberServer {
 		db: database.New(),
 	}
 
+	server.db.CreateTable()
+
+	server.Use(logger.New())
 	return server
 }

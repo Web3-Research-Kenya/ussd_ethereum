@@ -1,10 +1,20 @@
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: prod
+  npm:
+    image: jc21/nginx-proxy-manager:latest
     restart: unless-stopped
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+  app:
+    image: ghcr.io/web3-research-kenya/ussd_ethereum:main
+    restart: unless-stopped
+    container_name: ussd-ethereum
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     ports:
       - ${PORT}:${PORT}
     environment:
@@ -13,5 +23,24 @@ services:
       BLUEPRINT_DB_URL: ${BLUEPRINT_DB_URL}
     volumes:
       - sqlite_bp:/app/db
+    networks:
+        - net
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    command:
+      - "--label-enable"
+      - "--interval"
+      - "30"
+      - "--rolling-restart"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
 volumes:
   sqlite_bp:
+    name: eth-sqlite-db
+networks:
+  net:
+    driver: bridge
+    external: true

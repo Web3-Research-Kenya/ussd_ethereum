@@ -263,11 +263,11 @@ func (h *Handler) CallbackHandler(c *fiber.Ctx) error {
 				fmt.Printf("tx sent: %s", signedTx.Hash().Hex())
 
 				response = fmt.Sprintf("END You have successfully sent %s ETH to %s.", amount, recipient)
-				smsResponse, err := smsService.Send(phoneNumber, "+254716266543", "You have recieved")
-				if err != nil {
-					log.Panicf("failed to send sms: %v", err)
-				}
-				slog.Info("sms sent", "response", smsResponse)
+				// smsResponse, err := smsService.Send(phoneNumber, "+254716266543", "You have recieved")
+				// if err != nil {
+				// 	log.Panicf("failed to send sms: %v", err)
+				// }
+				// slog.Info("sms sent", "response", smsResponse)
 
 			} else {
 				response = "END Invalid PIN. Transaction failed."

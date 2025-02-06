@@ -9,6 +9,8 @@ services:
     volumes:
       - ./data:/data
       - ./letsencrypt:/etc/letsencrypt
+    networks:
+      - net
   app:
     image: ghcr.io/web3-research-kenya/ussd_ethereum:main
     restart: unless-stopped
@@ -23,8 +25,9 @@ services:
       BLUEPRINT_DB_URL: ${BLUEPRINT_DB_URL}
     volumes:
       - sqlite_bp:/app/db
+      - /tmp/geth.ipc:/tmp/geth.ipc
     networks:
-        - net
+      - net
 
   watchtower:
     image: containrrr/watchtower

@@ -14,6 +14,19 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
+func init() {
+	dirPath := "tmp"
+
+	// Check if directory exists
+	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+		// Create directory with permissions 0755
+		err := os.Mkdir(dirPath, 0755)
+		if err != nil {
+			fmt.Println("Error creating directory:", err)
+		}
+	}
+}
+
 func gracefulShutdown(fiberServer *server.FiberServer, done chan bool) {
 	// Create context that listens for the interrupt signal from the OS.
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)

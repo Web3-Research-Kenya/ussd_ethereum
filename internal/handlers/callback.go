@@ -63,7 +63,7 @@ func (h *Handler) CallbackHandler(c *fiber.Ctx) error {
 	case 1:
 		if currentText == "" {
 			// Main menu
-			response = "CON Welcome to the ETH Service\n1. Create Account\n2. Account Details\n3. Send ETH\n4. Receive ETH\n"
+			response = "CON Welcome to the USSD ETH Service\n1. Create Account\n2. Account Details\n3. Send KES\n4. Receive KES\n"
 		} else {
 			ksRecord, err := h.DB.SelectWalletByPhone(phoneNumber)
 			if err != nil {

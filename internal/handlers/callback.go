@@ -150,7 +150,11 @@ func (h *Handler) CallbackHandler(c *fiber.Ctx) error {
 			if err != nil {
 				panic(err)
 			}
-			response = fmt.Sprintf("END Phone number: %s\nPublic Key: %s\nBalance: %f(ETH)", phoneNumber, ksRecord.PublicKey, utils.WeiToEth(bal))
+			balanceEth := utils.WeiToEth(bal)
+			b, _ := balanceEth.Float64()
+			balanceUsd, err := utils.ConvertEthToUSD(b)
+			balanceKes, err := utils.ConvertUSDToKES(balanceUsd)
+			response = fmt.Sprintf("END Phone number: %s\nPublic Key: %s\nBalance: %f(KES)", phoneNumber, ksRecord.PublicKey, balanceKes)
 		case "3": // Send ETH
 			recipient := steps[1]
 			amount := steps[2]
@@ -165,7 +169,7 @@ func (h *Handler) CallbackHandler(c *fiber.Ctx) error {
 				response = fmt.Sprintf("Account for %s does not exist", recipient)
 			} else {
 				if amount == "" || strings.ContainsAny(amount, "abcdefghijklmnopqrstuvwxyz") {
-					response = "CON Invalid amount. Please enter a valid amount in ETH:\n0. Back"
+					response = "CON Invalid amount. Please enter a valid amount in KES:\n0. Back"
 				} else {
 					response = fmt.Sprintf("CON Enter your PIN to confirm sending %s KES to %s:\n0. Back", amount, recipient)
 				}
@@ -262,7 +266,7 @@ func (h *Handler) CallbackHandler(c *fiber.Ctx) error {
 
 				fmt.Printf("tx sent: %s", signedTx.Hash().Hex())
 
-				response = fmt.Sprintf("END You have successfully sent %s ETH to %s.", amount, recipient)
+				response = fmt.Sprintf("END You have successfully sent %s KES to %s.", amount, recipient)
 				// smsResponse, err := smsService.Send(phoneNumber, "+254716266543", "You have recieved")
 				// if err != nil {
 				// 	log.Panicf("failed to send sms: %v", err)

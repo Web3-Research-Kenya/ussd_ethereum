@@ -64,6 +64,25 @@ func ConvertKESToUSD(kes string) (float64, error) {
 	return float64(converted), nil
 }
 
+func ConvertUSDToKES(usd float64) (float64, error) {
+	url := fmt.Sprintf(exchangeRateURL, exchangeRateAPIKey, "USD")
+	agent := fiber.Get(url)
+
+	_, body, errs := agent.Bytes()
+	if len(errs) > 0 {
+		slog.Error("conversion error", "err", errs)
+	}
+
+	exchange := new(ExchangeAPIResponse)
+	if err := json.Unmarshal(body, exchange); err != nil {
+		slog.Error("conversion error", "err", err)
+		return 0, err
+	}
+
+	converted := int(usd) * exchange.ConversionRates.Usd
+	return float64(converted), nil
+}
+
 func ConvertUSDToEth(usd float64) (float64, error) {
 	url := fmt.Sprintf(coingeckoURL, "ethereum", "usd")
 	agent := fiber.Get(url)
@@ -81,6 +100,27 @@ func ConvertUSDToEth(usd float64) (float64, error) {
 	}
 
 	converted := usd / rates.Ethereum.Usd
+	return converted, nil
+
+}
+
+func ConvertEthToUSD(eth float64) (float64, error) {
+	url := fmt.Sprintf(coingeckoURL, "ethereum", "usd")
+	agent := fiber.Get(url)
+	agent.Add("x-cg-demo-api-key", "CG-ccGkH1VyyS5sYUbs2QiN2EV1")
+
+	_, body, errs := agent.Bytes()
+	if len(errs) > 0 {
+		slog.Error("conversion error", "err", errs)
+	}
+
+	rates := new(CoinGeckoAPIResponse)
+	if err := json.Unmarshal(body, rates); err != nil {
+		slog.Error("conversion error", "err", err)
+		return 0, err
+	}
+
+	converted := eth * rates.Ethereum.Usd
 	return converted, nil
 
 }

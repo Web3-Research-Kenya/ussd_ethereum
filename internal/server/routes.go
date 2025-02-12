@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"ussd_ethereum/internal/handlers"
 
 	"github.com/gofiber/fiber/v2"
@@ -20,6 +21,7 @@ func (s *FiberServer) RegisterFiberRoutes() {
 	}))
 
 	s.App.Post("/callback", h.CallbackHandler)
+	s.App.Post("/reports", Reports)
 
 	s.App.Get("/health", s.healthHandler)
 
@@ -27,4 +29,9 @@ func (s *FiberServer) RegisterFiberRoutes() {
 
 func (s *FiberServer) healthHandler(c *fiber.Ctx) error {
 	return c.JSON(s.db.Health())
+}
+
+func Reports(c *fiber.Ctx) error {
+	fmt.Printf("REPORT: %+v\n", string(c.Body()))
+	return nil
 }

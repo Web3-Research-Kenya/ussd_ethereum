@@ -11,6 +11,8 @@ import (
 	"os"
 	"strings"
 	"ussd_ethereum/internal/eth"
+	"ussd_ethereum/internal/service"
+	"ussd_ethereum/internal/sms"
 	"ussd_ethereum/internal/utils"
 
 	"github.com/ethereum/go-ethereum/accounts"
@@ -19,20 +21,11 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gofiber/fiber/v2"
-
-	"github.com/AndroidStudyOpenSource/africastalking-go/sms"
-)
-
-const (
-	apiKey    = "atsk_35079f792da37a72be09065f7659c8de5973dd655160c7280e7268e12dcbb0f0760fa898"
-	username  = "sandbox"
-	shortCode = "44472"
-	env       = ""
 )
 
 var menuTree *MenuTree
 
-var smsService = sms.NewService(apiKey, username, env)
+var smsService = sms.NewSMSService(service.NewAPIService("sandbox", "atsk_87d957c60f5b921fe57049b66db2f3163efd059dea38ce4f6bed0c38fe2313498b0a3343"))
 
 type Data struct {
 	PhoneNumber string
@@ -117,6 +110,13 @@ func (h *Handler) CallbackHandler(c *fiber.Ctx) error {
 					fmt.Println(err)
 				}
 				response = fmt.Sprintf("END Account created successfully with address %s.", addr)
+				message := fmt.Sprintf("Account created successfully with address %s.", addr)
+				go func() {
+					_, err = smsService.Send(message, []string{phoneNumber}, false, "44472")
+					if err != nil {
+						panic(err)
+					}
+				}()
 			}
 		case "2": // Account Details - PIN entry
 			pin := steps[1]
@@ -272,6 +272,20 @@ func (h *Handler) CallbackHandler(c *fiber.Ctx) error {
 				// 	log.Panicf("failed to send sms: %v", err)
 				// }
 				// slog.Info("sms sent", "response", smsResponse)
+				message := fmt.Sprintf("You have recieved %s from %s.", amount, phoneNumber)
+				go func() {
+					_, err = smsService.Send(message, []string{recipientPhone}, false, "44472")
+					if err != nil {
+						panic(err)
+					}
+				}()
+				go func() {
+					msg := fmt.Sprintf("You have sent %s to %s.", amount, recipientPhone)
+					_, err = smsService.Send(msg, []string{phoneNumber}, false, "44472")
+					if err != nil {
+						panic(err)
+					}
+				}()
 
 			} else {
 				response = "END Invalid PIN. Transaction failed."
